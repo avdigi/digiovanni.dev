@@ -1,0 +1,9 @@
+{
+  "name": "Anthony Di Giovanni — Website Developer",
+  "short_name": "Di Giovanni",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#04131c",
+  "theme_color": "#04131c",
+  "icons": [{ "src": "assets/img/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }]
+}

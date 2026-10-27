@@ -26,7 +26,7 @@
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   const between = (a, b) => a + rand() * (b - a);
 
-  let W = 0, H = 0, dpr = 1;
+  let W = 0, H = 0, dpr = 1, bleed = 0;
   const page = {};
 
   /* PROJECTION & ATMOSPHERE ------------------------------------------------ */
@@ -35,7 +35,7 @@
   const project = (pageY, dist) => H / 2 + (pageY - scrollY - H / 2) * parallax(dist);
   // Tracks whether anything was on screen this frame, so the loop can rest when not.
   let active = false;
-  const visible = (y, margin) => { const v = y > -margin && y < H + margin; if (v) active = true; return v; };
+  const visible = (y, margin) => { const v = y > -bleed - margin && y < H + bleed + margin; if (v) active = true; return v; };
 
   const SHADOW = [3, 16, 26];
   // Water color at screen height y, matching the gradient the sea layers paint.
@@ -422,10 +422,10 @@
       const x = cx + (f.ox + Math.sin(t * .9 + f.phase) * 7) * scale;
       const y = cy + (f.oy + Math.cos(t * 1.1 + f.phase) * 4) * scale;
       const s = dpr * f.size * scale;
-      ctx.setTransform(s * dir, 0, 0, s * (1 + Math.sin(t * 8 + f.phase) * .06), x * dpr, y * dpr);
+      ctx.setTransform(s * dir, 0, 0, s * (1 + Math.sin(t * 8 + f.phase) * .06), x * dpr, (y + bleed) * dpr);
       ctx.fill(FISH);
     }
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, bleed * dpr);
   }
 
   // A lone jack patrols just above the ledge, in front of the rock.
@@ -479,7 +479,7 @@
 
   function drawRidge() {
     const y0 = project(reef.y, reef.ridgeDist);
-    if (y0 > H + 40 || y0 + 1.2 * H < -40) return;
+    if (y0 > H + bleed + 40 || y0 + 1.2 * H < -bleed - 40) return;
     active = true;
     const ridge = new Path2D();
     reef.ridge.forEach(([fx, fy], i) => (i ? ridge.lineTo(fx * W, fy * H) : ridge.moveTo(fx * W, fy * H)));
@@ -489,14 +489,14 @@
 
   function drawSpire() {
     const y0 = project(reef.y, reef.spireDist);
-    if (y0 + H > H + 40 || y0 + 3.4 * H < -40) return;
+    if (y0 + H > H + bleed + 40 || y0 + 3.4 * H < -bleed - 40) return;
     active = true;
     fillRock(reef.spire, y0, reef.spireDist);
   }
 
   function drawReef(t) {
     const y0 = project(reef.y, reef.dist);
-    if (y0 > H + 40 || y0 + reef.depth < -40) return;
+    if (y0 > H + bleed + 40 || y0 + reef.depth < -bleed - 40) return;
     active = true;
     fillRock(reef.rock, y0, reef.dist);
     ctx.save();
@@ -534,7 +534,7 @@
       ctx.globalCompositeOperation = 'lighter';
       for (const l of reef.lights) {
         const sy = l.y + y0;
-        if (sy < -20 || sy > H + 20) continue;
+        if (sy < -bleed - 20 || sy > H + bleed + 20) continue;
         const pulse = .55 + .45 * Math.sin(t * l.speed + l.phase);
         glowDot(l.violet ? VIOLET : CYAN, l.x, l.y, l.size * (.8 + .3 * pulse), level * pulse * .75);
       }
@@ -549,13 +549,13 @@
     const fade = 1 - smooth(160, 360, ocean.depth);
     if (fade < .02) return;
     const y0 = project(reef.y, reef.dist);
-    if (y0 < -40 || y0 - H * 1.2 > H) return;
+    if (y0 < -bleed - 40 || y0 - H * 1.2 > H + bleed) return;
     ctx.lineWidth = 1;
     for (const v of reef.vents) {
       for (let i = 0; i < 9; i++) {
         const rise = ((t + v.phase + i * 1.3) * v.speed) % (H * .9);
         const y = y0 + v.y - rise;
-        if (y < -10 || y > H + 10) continue;
+        if (y < -bleed - 10 || y > H + bleed + 10) continue;
         active = true;
         const r = 1.6 + rise / (H * .9) * 3.4;
         const x = v.x + Math.sin(t * 2.2 + i * 1.7) * (2 + rise * .012);
@@ -576,7 +576,7 @@
       dist = k.dist;
       const baseY = project(reef.y + k.baseY, k.dist);
       const h = k.h * H, scale = parallax(k.dist);
-      if (baseY - h > H + 20 || baseY < -20) continue;
+      if (baseY - h > H + bleed + 20 || baseY < -bleed - 20) continue;
       any = active = true;
       const N = 18;
       let px = k.x * W, py = baseY;
@@ -739,8 +739,8 @@
 
   function draw(t) {
     active = false;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.clearRect(0, 0, W, H);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, bleed * dpr);
+    ctx.clearRect(0, -bleed, W, H + 2 * bleed);
     if (!reef) return;
     // Far to near.
     drawWhale(t);
@@ -778,9 +778,10 @@
   function resize() {
     dpr = Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2);
     W = canvas.clientWidth || innerWidth;
-    H = canvas.clientHeight || innerHeight;
+    bleed = parseFloat(getComputedStyle(canvas).getPropertyValue('--scene-bleed')) || 0;
+    H = (canvas.clientHeight || innerHeight) - 2 * bleed;
     canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
+    canvas.height = Math.round((H + 2 * bleed) * dpr);
     measure();
     if (!running) draw(time);
   }

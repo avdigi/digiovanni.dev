@@ -32,7 +32,7 @@
   const SEA_FS = `
     precision mediump float;
     varying vec2 vUv;
-    uniform vec2 uRes; uniform float uTime, uDepth, uNight, uScroll;
+    uniform vec2 uRes; uniform float uTime, uDepth, uNight, uScroll, uBleed;
     uniform vec3 uTop, uBot;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
     float noise(vec2 p){
@@ -51,7 +51,9 @@
       return pow(c, 8.);
     }
     void main(){
-      vec2 uv = vUv; float aspect = uRes.x / uRes.y;
+      // Preserve the original viewport lighting while drawing beyond its edges.
+      vec2 uv = vec2(vUv.x, (vUv.y - uBleed) / (1. - 2. * uBleed));
+      float aspect = uRes.x / uRes.y;
       vec3 col = mix(uBot, uTop, smoothstep(0., 1., uv.y));
       float sun = 1. - smoothstep(15., 230., uDepth);
       float day = 1. - uNight * .7;
@@ -152,9 +154,10 @@
 
     // Soft underwater light needs few pixels: render at about half resolution.
     let scale = Math.min(devicePixelRatio || 1, 2) * (coarse ? .5 : .6);
-    let width = 0, height = 0;
+    let width = 0, height = 0, bleed = 0;
     function resize() {
       const cssW = canvas.clientWidth || innerWidth, cssH = canvas.clientHeight || innerHeight;
+      bleed = parseFloat(getComputedStyle(canvas).getPropertyValue('--scene-bleed')) || 0;
       scale = Math.min(scale, Math.sqrt(1.1e6 / (cssW * cssH)));
       const w = Math.max(1, Math.round(cssW * scale)), h = Math.max(1, Math.round(cssH * scale));
       if (w === width && h === height) return;
@@ -180,7 +183,8 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, quad);
       gl.enableVertexAttribArray(aPos);
       gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform2f(sea.u.uRes, width, height);
+      gl.uniform2f(sea.u.uRes, width, height - 2 * bleed * scale);
+      gl.uniform1f(sea.u.uBleed, bleed / cssH);
       gl.uniform1f(sea.u.uTime, time);
       gl.uniform1f(sea.u.uDepth, ocean.depth);
       gl.uniform1f(sea.u.uNight, ocean.night ? 1 : 0);
@@ -196,7 +200,7 @@
       // while the layer fades in, then about five times a second (reading back
       // pixels makes the GPU finish its work, so it is kept rare).
       if (ocean.waterlineY !== undefined && sampleTick++ % ((ocean.waterMix || 0) < 1 ? 3 : 12) === 0) {
-        const y = ocean.waterlineY + 12;
+        const y = ocean.waterlineY + 12 + bleed;
         if (y > 0 && y < cssH) {
           const row = Math.min(height - 1, Math.max(0, Math.round((cssH - y) * scale)));
           if (!sampleRow || sampleRow.length !== width * 4) sampleRow = new Uint8Array(width * 4);
@@ -213,11 +217,11 @@
       gl.vertexAttribPointer(aSeed, 4, gl.FLOAT, false, 0, 0);
       gl.uniform2f(snow.u.uRes, width, height);
       gl.uniform1f(snow.u.uTime, time);
-      gl.uniform1f(snow.u.uDescent, scrollY / cssH);
+      gl.uniform1f(snow.u.uDescent, scrollY / (cssH - 2 * bleed));
       gl.uniform1f(snow.u.uDepth, ocean.depth);
       gl.uniform1f(snow.u.uScale, width / (canvas.clientWidth || innerWidth));
       gl.uniform1f(snow.u.uEnergy, ocean.pointer.energy);
-      gl.uniform2f(snow.u.uPointer, ocean.pointer.x * scale, (cssH - ocean.pointer.y) * scale);
+      gl.uniform2f(snow.u.uPointer, ocean.pointer.x * scale, (cssH - ocean.pointer.y - bleed) * scale);
       gl.drawArrays(gl.POINTS, 0, PARTICLES);
       gl.disableVertexAttribArray(aSeed);
     }

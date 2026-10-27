@@ -7,7 +7,6 @@
 <meta name="description" content="Full-stack web development, UX, and accessible digital experiences for higher education, nonprofits, businesses, and organizations.">
 <meta name="author" content="Anthony Di Giovanni">
 <link rel="canonical" href="https://digiovanni.dev/">
-<meta name="theme-color" content="#04131c">
 <meta name="color-scheme" content="dark light">
 
 <!-- Resolve the theme before first paint. -->
@@ -72,11 +71,14 @@ d.dataset.theme=t;d.classList.add('js')})();
 
   --sea-top:#1b86b0;
   --sea-bottom:#0a4a6c;
+  --scene-bleed:128px;
 
   /* The sky layer spans 300vw (see .hero__above::before), so the sun and moon
      are placed in viewport units: 162vw minus the gutter is 62% across the screen. */
-  --sky:linear-gradient(180deg,#4fb0dc 0%,#93d3ec 62%,#d4eff6 100%);
+  --sky-middle:#93d3ec;
+  --sky:linear-gradient(180deg,#4fb0dc 0%,var(--sky-middle) 62%,var(--sky-edge) 100%);
   --sky-edge:#d4eff6;
+  --sky-backdrop:color-mix(in srgb,var(--sky-middle),var(--sky-edge) var(--sky-progress,75%));
   --surface-water:#2c8db6;
   --crest:rgba(255,255,255,.95);
   --sky-ink:#05283b;
@@ -100,7 +102,8 @@ d.dataset.theme=t;d.classList.add('js')})();
 :root[data-theme="dark"]{
   --sea-top:#0f4d6c;
   --sea-bottom:#062b42;
-  --sky:linear-gradient(180deg,#020815 0%,#0a2140 62%,#1b4566 100%);
+  --sky-middle:#0a2140;
+  --sky:linear-gradient(180deg,#020815 0%,var(--sky-middle) 62%,var(--sky-edge) 100%);
   --sky-edge:#1b4566;
   --surface-water:#123f58;
   --crest:rgba(190,215,255,.45);
@@ -121,9 +124,13 @@ d.dataset.theme=t;d.classList.add('js')})();
 
 /* BASE -------------------------------------------------------------------- */
 *,*::before,*::after{box-sizing:border-box}
-html{background:#000;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:90px}
+/* The root also paints the overscroll/status-bar area. Use the sky until the
+   waterline scrolls past it; main.js then supplies the current ocean color. */
+html{background:var(--scene-top,var(--sky-backdrop));-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:90px}
 @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 body{
+  position:relative;
+  isolation:isolate;
   margin:0;
   min-height:100vh;
   overflow-x:clip;
@@ -141,13 +148,27 @@ strong{font-weight:650;color:#fff}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
 
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
-.skip{position:fixed;top:10px;left:10px;z-index:200;padding:10px 16px;border-radius:10px;background:#04161f;color:#fff;transform:translateY(-200%)}
-.skip:focus{transform:none}
+/* Only fixed while focused. Safari 26 tints its bars from fixed elements at the
+   screen edge, so a skip link parked off-screen turned the Dynamic Island area
+   dark (and showed through it). Unfocused, it is a clipped, in-flow element. */
+.skip{position:absolute;top:0;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.skip:focus{position:fixed;top:calc(10px + env(safe-area-inset-top));left:10px;z-index:200;width:auto;height:auto;overflow:visible;clip-path:none;padding:10px 16px;border-radius:10px;background:#04161f;color:#fff}
 
 
 /* THE SEA ----------------------------------------------------------------- */
-.sea,.water,.life{position:fixed;top:0;left:0;width:100%;height:100lvh;pointer-events:none}
-.sea{z-index:-3;background:linear-gradient(180deg,var(--sea-top),var(--sea-bottom))}
+/* All scene layers belong to the document. Fixed/sticky canvases are clipped
+   at Safari's controls, leaving a different backdrop above/below the scene.
+   Clip at the document edges only, and counter-scroll the viewport with CSS so
+   compositor scrolling does not wait for a JS scroll handler to position it. */
+.ocean-scene{position:absolute;inset:0;z-index:-1;overflow:clip;pointer-events:none;background:var(--sea-bottom)}
+.ocean-viewport{position:absolute;top:0;left:0;width:100%;height:100lvh;transform:translateY(var(--scene-scroll,0px))}
+@supports(animation-timeline:scroll(root block)){
+  .js .ocean-viewport{animation:scene-follow linear both;animation-timeline:scroll(root block)}
+}
+@keyframes scene-follow{from{transform:translateY(0)}to{transform:translateY(var(--scene-travel,0px))}}
+/* Draw beyond both viewport edges, including the area behind expanded bars. */
+.sea,.water,.life{position:absolute;top:calc(-1 * var(--scene-bleed));left:0;width:100%;height:calc(100% + 2 * var(--scene-bleed));pointer-events:none}
+.sea{z-index:-3;background:linear-gradient(180deg,var(--sea-top) var(--scene-bleed),var(--sea-bottom) calc(100% - var(--scene-bleed)))}
 .water{z-index:-2}
 .life{z-index:-1}
 .water{opacity:0} /* faded in by js/water.js, in step with the surface waves */
@@ -221,7 +242,8 @@ h3{font-size:clamp(19px,1.7vw,22px);line-height:1.25;letter-spacing:-.02em;font-
   position:relative;isolation:isolate;
   min-height:100svh;
   padding:clamp(118px,22svh,220px) var(--gutter) 16svh;
-  overflow:clip;
+  /* Let the sky paint above the hero into Safari's top inset. */
+  overflow-x:clip;
 }
 .hero__inner{position:relative;max-width:1060px}
 .hero__id{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;color:var(--sky-ink);font-weight:650;font-size:16px}
@@ -234,6 +256,13 @@ h3{font-size:clamp(19px,1.7vw,22px);line-height:1.25;letter-spacing:-.02em;font-
   /* Reaches down to the deepest trough of the surface swell, no further. */
   left:-100vw;right:-100vw;bottom:-6px;height:calc(200vh + 6px);
   background:var(--sun),var(--sky);
+}
+/* Safari's strip above scroll position zero extends a solid page color, not
+   the root background image. Meet it with that exact color at the document
+   edge, then smoothly reveal the sky/glow over the first 96px of the hero.
+   --sky-ceiling locates the document edge inside this oversized sky layer. */
+.sky-ready .hero__above::before{
+  background:linear-gradient(180deg,var(--sky-backdrop) var(--sky-ceiling),transparent calc(var(--sky-ceiling) + 96px)),var(--sun),var(--sky);
 }
 /* THE SURFACE --------------------------------------------------------------
    The waterline is drawn as water, in front of the coastline and the lighthouse
@@ -488,7 +517,8 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#ff9f8f}
 @media(max-width:359px){.nav__brand span{display:none}}
 
 @media(prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition-duration:.01ms!important}
+  /* scene-follow only cancels document scrolling; disabling it loses the backdrop. */
+  *:not(.ocean-viewport),*::before,*::after{animation:none!important;transition-duration:.01ms!important}
   .reveal-on .reveal{opacity:1;translate:none}
 }
 </style>
@@ -501,9 +531,13 @@ input[aria-invalid="true"],textarea[aria-invalid="true"]{border-color:#ff9f8f}
 <!-- The ocean, back to front: a CSS gradient that paints instantly, then two
      layers loaded when the page is idle: WebGL light (js/water.js) and the
      sea life (js/life.js). The page is complete without either. -->
-<div class="sea" aria-hidden="true"></div>
-<canvas class="water" aria-hidden="true"></canvas>
-<canvas class="life" aria-hidden="true"></canvas>
+<div class="ocean-scene" aria-hidden="true">
+  <div class="ocean-viewport">
+    <div class="sea"></div>
+    <canvas class="water"></canvas>
+    <canvas class="life"></canvas>
+  </div>
+</div>
 
 <header class="nav">
   <a class="nav__brand" href="#top" aria-label="Anthony Di Giovanni, back to the surface">

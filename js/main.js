@@ -9,6 +9,7 @@
   const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
   const EMAIL = 'av@digiovanni.dev';
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  const nativeSceneScroll = CSS.supports('animation-timeline: scroll(root block)');
 
   const ocean = window.ocean = {
     depth: 0,
@@ -44,12 +45,21 @@
   const pageY = el => el.getBoundingClientRect().top + scrollY;
   const maxScroll = () => Math.max(1, root.scrollHeight - innerHeight);
 
-  let waterline = 0;
+  let waterline = 0, skyHeight = 1;
   function measure() {
     const mid = el => pageY(el) + el.offsetHeight / 2 - innerHeight / 2;
     anchors = [[0, 0], ...DEPTHS.map(([id, m]) => [mid($(id)), m]), [maxScroll(), 5000]];
     anchors.sort((a, b) => a[0] - b[0]);
     waterline = pageY(heroAbove) + heroAbove.offsetHeight;
+    const sky = getComputedStyle(heroAbove, '::before');
+    const above = heroAbove.getBoundingClientRect();
+    skyHeight = parseFloat(sky.height) || 1;
+    // Locate document y=0 within the oversized sky so its top edge can blend
+    // into Safari's solid status-bar extension, including after rotation.
+    root.style.setProperty('--sky-ceiling', `${skyHeight - above.bottom - scrollY + parseFloat(sky.bottom)}px`);
+    root.classList.add('sky-ready');
+    // Match the root scroll timeline's range, including toolbar/rotation changes.
+    root.style.setProperty('--scene-travel', `${Math.max(0, root.scrollHeight - root.clientHeight)}px`);
     measureNav();
   }
 
@@ -100,16 +110,24 @@
     const m = depthAt(scrollY);
     ocean.depth = m;
     [ocean.top, ocean.bottom] = colorsAt(m);
-    // Until WebGL takes over, the CSS gradient is the sea.
-    if (!ocean.waterReady) {
-      root.style.setProperty('--sea-top', css(ocean.top));
-      root.style.setProperty('--sea-bottom', css(ocean.bottom));
-    }
+    // The CSS sea is the fallback if WebGL is unavailable or loses its context.
+    root.style.setProperty('--sea-top', css(ocean.top));
+    root.style.setProperty('--sea-bottom', css(ocean.bottom));
+    if (!nativeSceneScroll) root.style.setProperty('--scene-scroll', `${Math.max(0, scrollY)}px`);
 
     // The surface swells are drawn as water; keep their color matched to the sea
     // right at the waterline (the sea is a vertical gradient that shifts with depth).
     const surfaceY = waterline - scrollY;
     ocean.waterlineY = surfaceY;
+    // The root is visible above the document when Safari extends the page into
+    // its status bar or the user pulls down. Do not fill that sky with water.
+    if (surfaceY > 0) {
+      // Match the visible portion of the sky's final gradient segment (62–100%).
+      const skyProgress = Math.min(1, Math.max(0, (1 - (surfaceY + 6) / skyHeight - .62) / .38));
+      root.style.setProperty('--sky-progress', `${skyProgress * 100}%`);
+      root.style.removeProperty('--scene-top');
+    }
+    else root.style.setProperty('--scene-top', css(ocean.top));
     if (surfaceY > -60 && surfaceY < innerHeight + 60) {
       const k = Math.min(1, Math.max(0, surfaceY / innerHeight));
       surfaceRGB = ocean.top.map((v, i) => v + (ocean.bottom[i] - v) * k);

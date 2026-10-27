@@ -10,12 +10,12 @@
 <meta name="theme-color" content="#04131c">
 <meta name="color-scheme" content="dark light">
 
-<!-- Resolve theme and motion preferences before first paint. -->
+<!-- Resolve the theme before first paint. -->
 <script>
-(()=>{const d=document.documentElement;let t=null,p=null;
-try{t=localStorage.getItem('portfolio-theme');p=localStorage.getItem('ocean-paused')}catch{}
+(()=>{const d=document.documentElement;let t=null;
+try{t=localStorage.getItem('portfolio-theme')}catch{}
 if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
-d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')})();
+d.dataset.theme=t;d.classList.add('js')})();
 </script>
 
 <link rel="icon" type="image/png" sizes="48x48" href="assets/img/favicon-48.png">
@@ -69,7 +69,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
 
 <header class="nav">
   <a class="nav__brand" href="#top" aria-label="Anthony Di Giovanni, back to the surface">
-    <img src="assets/img/favicon-48.png" width="28" height="28" alt="">
     <span>Anthony Di Giovanni</span>
   </a>
   <nav class="nav__links" aria-label="Main navigation">
@@ -85,34 +84,25 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
       <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3 7 7M17 17l1.7 1.7M5.3 18.7 7 17M17 7l1.7-1.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 15.3A8 8 0 0 1 8.7 4.5a8 8 0 1 0 10.8 10.8Z" fill="currentColor"/></svg>
     </button>
-    <button class="tool" id="pause" type="button" aria-pressed="false" aria-label="Pause animation" title="Pause motion">
-      <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.4" fill="currentColor"/></svg>
-      <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.8v12.4c0 .8.9 1.3 1.6.9l9.2-6.2c.7-.5.7-1.5 0-1.9L9.6 4.9c-.7-.4-1.6.1-1.6.9z" fill="currentColor"/></svg>
-    </button>
     <a class="nav__cta" href="#contact">Let’s talk</a>
   </div>
 </header>
 
-<!-- Depth gauge (wide screens): a quiet number, nothing more. -->
-<div class="gauge" aria-hidden="true">
-  <div class="gauge__track"><div class="gauge__fill"></div></div>
-  <p class="gauge__readout" data-depth-m>0 m</p>
-</div>
 
 <main>
   <section class="hero" id="top">
     <div class="hero__inner">
       <p class="hero__id"><span>Anthony Di Giovanni</span><span class="pill">Website developer</span></p>
       <h1 class="hero__title">
-        <span class="hero__above">Your next website.<span class="surface" aria-hidden="true"><span class="surface__back"></span><span class="surface__crest"></span><span class="surface__under"></span></span><span class="coast" aria-hidden="true">
+        <span class="hero__above">Your next website.<span class="coast" aria-hidden="true">
           <svg class="coast__far" viewBox="0 0 1000 300" preserveAspectRatio="none" focusable="false"><path d="M260 300C300 288 340 280 380 276 430 272 470 258 520 254 570 250 600 236 650 234 700 232 730 220 780 218 830 216 860 204 910 202 950 200 980 192 1000 190V300Z"/><path class="coast__lip" d="M380 276C430 272 470 258 520 254 570 250 600 236 650 234 700 232 730 220 780 218 830 216 860 204 910 202 950 200 980 192 1000 190"/><path class="coast__foam" d="M300 297q15-4 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0"/></svg>
-          <svg class="coast__mid" viewBox="0 0 1000 300" preserveAspectRatio="none" focusable="false"><path d="M470 300 490 288C520 282 548 270 580 266 604 262 620 246 646 240L668 236C690 216 714 196 744 188 770 180 790 162 820 156 852 150 876 132 908 126 940 120 968 116 1000 114V300Z"/><path class="coast__lip" d="M580 266C604 262 620 246 646 240L668 236C690 216 714 196 744 188 770 180 790 162 820 156 852 150 876 132 908 126 940 120 968 116 1000 114"/><path class="coast__crack" d="M700 220 706 270M760 190 752 240 760 286M830 160 836 220M900 132 894 200 902 262M960 120 966 190"/><path class="coast__foam" d="M480 297q15-4 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0"/></svg>
+          <svg class="coast__mid" viewBox="0 0 1000 300" preserveAspectRatio="none" focusable="false"><path d="M470 300 490 288C520 282 548 270 580 266 604 262 620 246 646 240L668 236C690 216 714 196 744 188 770 180 790 162 820 156 852 150 876 132 908 126 940 120 968 116 1000 114V300Z"/><path class="coast__lip" d="M580 266C604 262 620 246 646 240L668 236C690 216 714 196 744 188 770 180 790 162 820 156 852 150 876 132 908 126 940 120 968 116 1000 114"/><path class="coast__foam" d="M480 297q15-4 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0"/></svg>
         </span><span class="lighthouse" aria-hidden="true">
           <span class="lighthouse__beam"></span>
           <span class="lighthouse__flash"></span>
           <svg viewBox="0 0 160 320" focusable="false">
             <defs>
-              <linearGradient id="lh-deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f2a34" stop-opacity=".95"/><stop offset=".45" stop-color="#14323d" stop-opacity=".7"/><stop offset="1" stop-color="#14323d" stop-opacity="0"/></linearGradient>
+              <linearGradient id="lh-deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14323d" stop-opacity=".55"/><stop offset=".5" stop-color="#14323d" stop-opacity=".25"/><stop offset="1" stop-color="#14323d" stop-opacity="0"/></linearGradient>
               <linearGradient id="lh-rock" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5a7880"/><stop offset=".45" stop-color="#3a565e"/><stop offset="1" stop-color="#1c3138"/></linearGradient>
               <linearGradient id="lh-head" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4c6a73"/><stop offset=".25" stop-color="#2c464f"/><stop offset="1" stop-color="#1a2e35"/></linearGradient>
               <linearGradient id="lh-cliff" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#001018" stop-opacity=".45"/></linearGradient>
@@ -123,7 +113,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
                  to a cliff that runs off the right edge of the screen. -->
             <path class="lighthouse__rock" d="M110 241 118 200 132 192 146 204 154 208 164 200 176 190 188 174 200 160 214 146 230 136 250 128 276 124 310 120 350 122 400 116 460 118 520 112 600 116 700 110 760 112V241Z" fill="url(#lh-head)"/>
             <path d="M164 200 176 190 188 174 200 160 214 146 230 136 250 128 276 124 310 120 350 122 400 116" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="1.3" stroke-linejoin="round"/>
-            <path d="M196 176 204 214M222 150 230 196 226 226M256 134 262 180M300 126 296 168 304 210M350 128 356 176M420 122 414 170 420 214M500 118 506 160" fill="none" stroke="#0b1d23" stroke-opacity=".45" stroke-width="1.2" stroke-linecap="round"/>
             <!-- A steep rocky islet: lit from the left (the sun's side), shadowed on the right. -->
             <path class="lighthouse__rock" d="M-14 241-6 230 2 224 6 212 14 206 18 194 28 188 34 178 46 172 56 166 104 165 112 169 120 176 126 184 134 190 138 200 146 208 150 220 160 228 168 234 174 241Z" fill="url(#lh-rock)"/>
             <path d="M-14 241-6 230 2 224 6 212 14 206 18 194 28 188 34 178 46 172 56 166 104 165 112 169 120 176 126 184 134 190 138 200 146 208 150 220 160 228 168 234 174 241Z" fill="url(#lh-cliff)"/>
@@ -152,7 +141,7 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
               <path d="M-8 244q20 4 40 1M120 244q22 4 46 0" stroke-opacity=".35" stroke-width="1.2"/>
             </g>
           </svg>
-        </span></span>
+        </span><span class="surface" aria-hidden="true"><span class="surface__front"></span><canvas class="surface__canvas"></canvas></span></span>
         <span class="hero__below">A <em>deeper</em> connection.</span>
       </h1>
       <p class="hero__lead">I build websites that help organizations make a stronger first impression, communicate clearly, and connect with their audience.</p>
@@ -229,7 +218,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
 
       <div class="contact__quick">
         <a class="button button--primary" href="mailto:av@digiovanni.dev">Email av@digiovanni.dev</a>
-        <a class="button" href="assets/anthony-di-giovanni.vcf" download>Save my contact</a>
         <button class="button button--ghost" id="copy-email" type="button">Copy email</button>
       </div>
 
@@ -257,7 +245,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
           <radialGradient id="angler-skin" cx="40" cy="34" r="290" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#55594a"/><stop offset=".2" stop-color="#2c2a20"/><stop offset=".42" stop-color="#15130e"/><stop offset="1" stop-color="#050403"/></radialGradient>
           <radialGradient id="angler-fin" cx="40" cy="34" r="300" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#d8f5e2" stop-opacity=".42"/><stop offset=".5" stop-color="#9c9a80" stop-opacity=".16"/><stop offset="1" stop-color="#6f6a58" stop-opacity=".08"/></radialGradient>
           <radialGradient id="angler-rim" cx="40" cy="34" r="250" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#b8ffe0" stop-opacity=".65"/><stop offset=".5" stop-color="#8ad8c0" stop-opacity=".14"/><stop offset="1" stop-color="#8ad8c0" stop-opacity="0"/></radialGradient>
-          <radialGradient id="angler-throat" cx="40" cy="128" r="64" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#3a2422"/><stop offset=".55" stop-color="#110807"/><stop offset="1" stop-color="#000"/></radialGradient>
           <radialGradient id="angler-tooth" cx="40" cy="34" r="150" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#fffdf2" stop-opacity=".95"/><stop offset="1" stop-color="#c9c2a8" stop-opacity=".5"/></radialGradient>
           <linearGradient id="angler-shade" x1="0" y1="0" x2="0" y2="1"><stop offset=".4" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".6"/></linearGradient>
           <clipPath id="angler-clip"><path d="M45.5 100.4C47 98.9 52 94.3 54.8 91.2C57.6 88.1 58.8 86.8 62.2 81.9C65.6 77 67.4 66.5 75.1 61.6C82.8 56.7 96.1 53.5 108.4 52.3C120.7 51.1 134.9 52 149.1 54.2C163.3 56.4 178.1 59.4 193.5 65.3C208.9 71.1 229.5 83.8 241.8 89.3C254.1 94.8 261.3 96.6 267.5 98.6C273.7 100.5 277.1 100.6 279 101L279 143C274.6 144.2 262 147.9 252.7 150.4C243.4 152.9 230.5 152.2 223.1 157.8C215.7 163.4 218.2 174.4 208.3 183.7C198.4 192.9 177.5 207.5 163.9 213.3C150.3 219.2 141.1 219.9 126.9 218.8C112.7 217.8 93.3 212.1 78.8 207C64.3 201.9 49.8 195.8 40 188C30.2 180.2 23.3 164.7 20 160L17 150L94 129Z"/></clipPath>
@@ -274,7 +261,7 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
           <path d="M45.5 100.4C47 98.9 52 94.3 54.8 91.2C57.6 88.1 58.8 86.8 62.2 81.9C65.6 77 67.4 66.5 75.1 61.6C82.8 56.7 96.1 53.5 108.4 52.3C120.7 51.1 134.9 52 149.1 54.2C163.3 56.4 178.1 59.4 193.5 65.3C208.9 71.1 229.5 83.8 241.8 89.3C254.1 94.8 261.3 96.6 267.5 98.6C273.7 100.5 277.1 100.6 279 101L279 143C274.6 144.2 262 147.9 252.7 150.4C243.4 152.9 230.5 152.2 223.1 157.8C215.7 163.4 218.2 174.4 208.3 183.7C198.4 192.9 177.5 207.5 163.9 213.3C150.3 219.2 141.1 219.9 126.9 218.8C112.7 217.8 93.3 212.1 78.8 207C64.3 201.9 49.8 195.8 40 188C30.2 180.2 23.3 164.7 20 160L17 150L94 129Z" fill="url(#angler-shade)"/>
         </g>
         <path d="M45.5 100.4C47 98.9 52 94.3 54.8 91.2C57.6 88.1 58.8 86.8 62.2 81.9C65.6 77 67.4 66.5 75.1 61.6C82.8 56.7 96.1 53.5 108.4 52.3C120.7 51.1 134.9 52 149.1 54.2C163.3 56.4 178.1 59.4 193.5 65.3C208.9 71.1 229.5 83.8 241.8 89.3C254.1 94.8 261.3 96.6 267.5 98.6C273.7 100.5 277.1 100.6 279 101L279 143C274.6 144.2 262 147.9 252.7 150.4C243.4 152.9 230.5 152.2 223.1 157.8C215.7 163.4 218.2 174.4 208.3 183.7C198.4 192.9 177.5 207.5 163.9 213.3C150.3 219.2 141.1 219.9 126.9 218.8C112.7 217.8 93.3 212.1 78.8 207C64.3 201.9 49.8 195.8 40 188C30.2 180.2 23.3 164.7 20 160L17 150L94 129Z" fill="none" stroke="url(#angler-rim)" stroke-width="1.4"/>
-        <path d="M45.5 100.4L94 129 17 150C24 130 34 112 45.5 100.4Z" fill="url(#angler-throat)"/>
+        
         <path fill="url(#angler-tooth)" d="M48.9 103.1Q52.2 109.7 56 114.9Q54.2 110.1 51.3 104.5ZM54.9 106.6Q59.3 115.8 64.6 123.1Q61.6 116.1 57.5 108.1ZM61.2 110.3Q63.9 115.3 66.8 119.3Q65.7 115.8 63.5 111.6ZM67.2 113.8Q71.2 121.9 75.9 128.4Q73.4 122.3 69.8 115.2ZM73.6 117.4Q75.9 122 78.6 125.5Q77.7 122.5 75.7 118.7ZM79.6 121Q82.7 127.1 86.2 131.9Q84.6 127.5 81.9 122.3ZM85.9 124.6Q87.8 128.1 89.9 130.8Q89.5 128.7 88 125.8ZM21.3 148.4Q23.7 136 29.5 126.1Q27.6 136.5 24.6 147.5ZM29.4 146.2Q31 139.9 34.1 134.9Q33.8 139.9 32.2 145.5ZM37.1 144.1Q39.3 133.5 44.4 124.8Q42.9 133.8 40.3 143.3ZM45.3 142Q46.7 136.8 49.3 132.7Q49.3 136.7 48 141.2ZM53 139.9Q54.9 130.9 59.3 123.6Q58.2 131.1 56 139.1ZM61.1 137.7Q62.4 133.1 64.8 129.4Q64.9 133 63.7 137ZM68.9 135.7Q70.5 128.8 73.9 123.3Q73.4 128.9 71.7 134.9ZM76.9 133.5Q78.1 130 80 127.2Q80.4 129.8 79.5 132.8ZM84.7 131.4Q86 127.3 88.2 124.1Q88.4 127.2 87.4 130.7Z"/>
         <path d="M45.5 100.4L94 129M17 150L94 129" stroke="url(#angler-rim)" stroke-width="1.8" stroke-linecap="round" fill="none"/>
         <g class="angler__fin"><path d="M160 117L176 92Q181.6 98.4 192 98Q194.7 104.7 205 106Q204.6 112.8 214 116Q210.8 122.2 219 127Q212.7 132.2 218 138Q209.5 141.6 212 148Q202.3 149.7 202 156Q191.5 154.7 188 159L160 141Z" fill="url(#angler-fin)" stroke="url(#angler-rim)" stroke-width=".8"/><path d="M160 117L176 92M160 120L192 98M160 123L205 106M160 126L214 116M160 129L219 127M160 132L218 138M160 135L212 148M160 138L202 156M160 141L188 159" stroke="url(#angler-rim)" stroke-width=".9" fill="none"/></g>
@@ -289,7 +276,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
       <h2 id="abyss-title" class="sr-only">Get in touch</h2>
       <a class="abyss__email" href="mailto:av@digiovanni.dev">av@digiovanni.dev</a>
       <div class="actions actions--center">
-        <a class="button" href="assets/anthony-di-giovanni.vcf" download>Save my contact</a>
         <a class="button button--ghost" href="#top">Back to the surface ↑</a>
       </div>
     </div>
@@ -300,12 +286,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
   </section>
 </main>
 
-<!-- Mobile dock: depth plus the one action that matters. -->
-<div class="dock">
-  <p class="dock__depth" aria-hidden="true" data-depth-m>0 m</p>
-  <a class="dock__cta" href="#contact">Let’s talk</a>
-</div>
-
 <dialog class="share" id="share" aria-labelledby="share-title">
   <form method="dialog" class="share__inner">
     <button class="share__close" value="close" aria-label="Close">×</button>
@@ -314,7 +294,6 @@ d.dataset.theme=t;d.classList.add('js');if(p==='true')d.classList.add('paused')}
     <p class="share__url">digiovanni.dev</p>
     <div class="share__actions">
       <button class="button button--primary" type="button" id="share-link">Share link</button>
-      <a class="button" href="assets/anthony-di-giovanni.vcf" download>Save my contact</a>
     </div>
     <p class="share__status" role="status" aria-live="polite"></p>
   </form>

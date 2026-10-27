@@ -1,9 +1,0 @@
-BEGIN:VCARD
-VERSION:3.0
-N:Di Giovanni;Anthony;;;
-FN:Anthony Di Giovanni
-TITLE:Website Developer
-EMAIL;TYPE=INTERNET,WORK:av@digiovanni.dev
-URL:https://digiovanni.dev/
-NOTE:Full-stack web development\, UX\, and accessible websites for higher education\, nonprofits\, and organizations.
-END:VCARD

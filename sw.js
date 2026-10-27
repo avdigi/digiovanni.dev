@@ -2,10 +2,10 @@
    Stale-while-revalidate for same-origin files: after one visit the site opens
    instantly from the device, even on poor signal, and refreshes in the background.
    Bump VERSION when shipping changes so old caches are cleared. */
-const VERSION = 'ocean-v3';
+const VERSION = 'ocean-v10';
 const CORE = [
   './', 'index.html', 'css/ocean.css', 'js/main.js', 'js/water.js', 'js/life.js',
-  'assets/img/favicon-48.png', 'assets/img/qr.svg', 'assets/anthony-di-giovanni.vcf',
+  'assets/img/favicon-48.png', 'assets/img/qr.svg',
   'assets/img/gallaudet.png', 'assets/img/cad.png', 'assets/img/dwave.png',
 ];
 

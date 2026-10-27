@@ -160,6 +160,7 @@
     }
 
     let time = Math.random() * 100, last = 0, frame = 0, running = false, dirty = true;
+    let sampleTick = 0, sampleRow = null;
     const frameTimes = [];
 
     function draw() {
@@ -178,6 +179,19 @@
       gl.uniform3f(sea.u.uBot, ocean.bottom[0] / 255, ocean.bottom[1] / 255, ocean.bottom[2] / 255);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
       gl.disableVertexAttribArray(aPos);
+
+      // Share the sea's actual color just below the waterline (light shafts,
+      // caustics and all), so the surface waves drawn by js/main.js are painted
+      // in exactly the same blue. Read before the particles, every third frame.
+      if (ocean.waterlineY !== undefined && ++sampleTick % 3 === 0) {
+        const y = ocean.waterlineY + 12;
+        if (y > 0 && y < cssH) {
+          const row = Math.min(height - 1, Math.max(0, Math.round((cssH - y) * scale)));
+          if (!sampleRow || sampleRow.length !== width * 4) sampleRow = new Uint8Array(width * 4);
+          gl.readPixels(0, row, width, 1, gl.RGBA, gl.UNSIGNED_BYTE, sampleRow);
+          ocean.surfaceSample = { row: sampleRow, width, scale };
+        } else ocean.surfaceSample = null;
+      }
 
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.ONE, gl.ONE);
@@ -239,6 +253,7 @@
       running = false;
       unsubscribe();
       ocean.waterReady = false;
+      ocean.surfaceSample = null;
       canvas.classList.remove('is-ready');
     });
     new ResizeObserver(resize).observe(canvas);

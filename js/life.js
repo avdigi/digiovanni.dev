@@ -609,6 +609,60 @@
     ctx.fill(blades);
   }
 
+  // Chambered nautilus in silhouette, side view: tentacles toward +x, coil
+  // toward -x. It swims backwards, shell first, by jetting water. One smooth
+  // contraction curve drives everything: the tentacles draw together, the body
+  // surges and tilts, then all of it relaxes into a long glide. Speed, spread
+  // and tilt follow the same curve, so there is never a jump between strokes.
+  const NAUTILUS = {
+    shell: P('M22-14C14-25-2-28-14-22-27-16-30 3-22 16-14 27 5 28 17 21 24 16 27 9 27 3 27-5 25-10 22-14Z'),
+    hood: P('M20-15C29-13 32-5 30 2 27 6 23 6 19 3 21-4 21-10 20-15Z'),
+    eye: P('M24 5a4 6 .2 1 0 .01 0Z'),
+  };
+  const nautilus = { x: null, lastT: null };
+  const contraction = p => (p < .28 ? smooth(0, .28, p) : 1 - smooth(.28, 1, p));
+  function drawNautilus(t) {
+    const dist = .26, scale = clamp(W / 1150, .6, .95) * parallax(dist);
+    // It cruises in the open water just above the cliff top, moving with the
+    // reef as the page scrolls.
+    const reefY = project(reef.y, reef.dist);
+    const y0 = reefY - 60 * scale;
+    if (!visible(y0, 100)) return;
+    const c = contraction((t / 2.8) % 1);
+    const dt = nautilus.lastT === null ? 0 : clamp(t - nautilus.lastT, 0, .1);
+    nautilus.lastT = t;
+    if (nautilus.x === null) nautilus.x = W * .72;
+    nautilus.x -= 15 * scale * (1 + 1.7 * Math.pow(c, 1.4)) * dt;
+    if (nautilus.x < -80 * scale || nautilus.x > W + 80 * scale) nautilus.x = W + 80 * scale;
+    const spread = 1 - c; // trailing wide in the glide, drawn together on the stroke
+    const y = y0 + Math.sin(t * .6) * 7 - c * 2;
+    const fill = tint(dist, y);
+
+    ctx.save();
+    ctx.translate(nautilus.x, y);
+    ctx.rotate(Math.sin(t * .45) * .05 - .07 * c);
+    ctx.scale(scale, scale);
+    ctx.fillStyle = fill;
+    ctx.strokeStyle = fill;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 20; i++) {
+      const f = i / 19, y1 = 1 + f * 12;
+      const len = (17 + 12 * (.5 + .5 * Math.sin(i * 1.7))) * (.66 + .34 * spread);
+      const fan = (f - .5) * 10 * spread;
+      ctx.lineWidth = 1.2 - f * .5;
+      ctx.beginPath();
+      ctx.moveTo(24, y1);
+      ctx.bezierCurveTo(24 + len * .4, y1 + fan * .3 + Math.sin(t * 2.4 + i) * 1.1,
+        24 + len * .75, y1 + fan * .8 + Math.sin(t * 2.7 + i * 1.3) * 1.8,
+        24 + len, y1 + fan + Math.sin(t * 2.1 + i) * 2.2);
+      ctx.stroke();
+    }
+    ctx.fill(NAUTILUS.shell);
+    ctx.fill(NAUTILUS.hood);
+    ctx.fill(NAUTILUS.eye);
+    ctx.restore();
+  }
+
   function drawJellies(t) {
     const level = glowLevel();
     if (level < .02) return;
@@ -699,6 +753,7 @@
     drawJellies(t);
     drawTurtle(t);
     drawReef(t);
+    drawNautilus(t);
     drawBubbles(t);
     drawJack(t);
     drawKelp(t, true);

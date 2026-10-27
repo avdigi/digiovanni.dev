@@ -352,20 +352,44 @@
       draw();
     }
 
-    // The water's color across the screen: sampled from the rendered sea when
-    // the light layer is running, otherwise the plain sea gradient.
+    // The water's color across the screen. The sea on screen is the plain CSS
+    // gradient, cross-faded with the WebGL light layer (js/water.js) as it
+    // arrives; ocean.waterMix says how far along that fade is, and
+    // ocean.surfaceSample holds the light layer's actual pixels just below the
+    // waterline. Each stop eases toward its target, so neither the layer's
+    // arrival nor a passing light shaft ever makes the color jump.
+    const STOPS = 28;
+    const waterCanvas = $('.water');
+    let eased = null;
     function waterFill() {
-      const s = ocean.surfaceSample;
-      if (!s) return `rgb(${surfaceRGB.map(Math.round).join(',')})`;
+      if (!eased) eased = Array.from({ length: STOPS + 1 }, () => surfaceRGB.slice());
       const g = ctx.createLinearGradient(0, 0, W, 0);
-      const stops = 28;
-      for (let i = 0; i <= stops; i++) {
-        const cx = Math.round((i / stops) * W * s.scale);
-        let rr = 0, gg = 0, bb = 0, n = 0;
-        for (let k = Math.max(0, cx - 4); k <= Math.min(s.width - 1, cx + 4); k++) {
-          rr += s.row[k * 4]; gg += s.row[k * 4 + 1]; bb += s.row[k * 4 + 2]; n++;
+      // While the light layer is showing but has no sample for the current
+      // layout (right after a resize), hold the colors rather than drifting.
+      const s = ocean.surfaceSample;
+      const current = s && s.cssWidth === waterCanvas.clientWidth;
+      const hold = (ocean.waterMix || 0) > 0 && !current;
+      const mix = current ? (ocean.waterMix || 0) : 0;
+      for (let i = 0; i <= STOPS; i++) {
+        if (hold) {
+          const c = eased[i];
+          g.addColorStop(i / STOPS, `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`);
+          continue;
         }
-        g.addColorStop(i / stops, `rgb(${(rr / n) | 0},${(gg / n) | 0},${(bb / n) | 0})`);
+        let target = surfaceRGB;
+        if (mix > 0) {
+          const cx = Math.round((i / STOPS) * W * s.scale);
+          let rr = 0, gg = 0, bb = 0, n = 0;
+          for (let k = Math.max(0, cx - 4); k <= Math.min(s.width - 1, cx + 4); k++) {
+            rr += s.row[k * 4]; gg += s.row[k * 4 + 1]; bb += s.row[k * 4 + 2]; n++;
+          }
+          const sample = [rr / n, gg / n, bb / n];
+          target = surfaceRGB.map((v, j) => v + (sample[j] - v) * mix);
+        }
+        // A still scene (reduced motion) redraws rarely, so it takes the target at once.
+        const c = eased[i], k = ocean.paused ? 1 : .2;
+        for (let j = 0; j < 3; j++) c[j] += (target[j] - c[j]) * k;
+        g.addColorStop(i / STOPS, `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`);
       }
       return g;
     }

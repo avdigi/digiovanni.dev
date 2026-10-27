@@ -16,6 +16,11 @@
     powerPreference: 'low-power', failIfMajorPerformanceCaveat: true,
   });
   if (!gl) return;
+  // Some browsers emulate WebGL on the CPU without reporting a performance
+  // caveat. Check the renderer name too: software rendering keeps the CSS sea.
+  const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+  const renderer = debugInfo ? String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)) : '';
+  if (/swiftshader|llvmpipe|softpipe|software|basic render/i.test(renderer)) return;
 
   const coarse = matchMedia('(pointer: coarse)').matches;
   const PARTICLES = coarse ? 170 : 280;
@@ -156,11 +161,16 @@
       width = canvas.width = w;
       height = canvas.height = h;
       gl.viewport(0, 0, w, h);
+      // The old sample describes the old layout: drop it and take a fresh one
+      // on the next frame. The surface waves hold their colors meanwhile.
+      ocean.surfaceSample = null;
+      sampleTick = 0;
       wake();
     }
 
     let time = Math.random() * 100, last = 0, frame = 0, running = false, dirty = true;
-    let sampleTick = 0, sampleRow = null;
+    let sampleTick = 0, sampleRow = null, fadeStart = 0;
+    const FADE_MS = 800;
     const frameTimes = [];
 
     function draw() {
@@ -182,14 +192,16 @@
 
       // Share the sea's actual color just below the waterline (light shafts,
       // caustics and all), so the surface waves drawn by js/main.js are painted
-      // in exactly the same blue. Read before the particles, every third frame.
-      if (ocean.waterlineY !== undefined && ++sampleTick % 3 === 0) {
+      // in exactly the same blue. Read before the particles: every few frames
+      // while the layer fades in, then about five times a second (reading back
+      // pixels makes the GPU finish its work, so it is kept rare).
+      if (ocean.waterlineY !== undefined && sampleTick++ % ((ocean.waterMix || 0) < 1 ? 3 : 12) === 0) {
         const y = ocean.waterlineY + 12;
         if (y > 0 && y < cssH) {
           const row = Math.min(height - 1, Math.max(0, Math.round((cssH - y) * scale)));
           if (!sampleRow || sampleRow.length !== width * 4) sampleRow = new Uint8Array(width * 4);
           gl.readPixels(0, row, width, 1, gl.RGBA, gl.UNSIGNED_BYTE, sampleRow);
-          ocean.surfaceSample = { row: sampleRow, width, scale };
+          ocean.surfaceSample = { row: sampleRow, width, scale, cssWidth: canvas.clientWidth || innerWidth };
         } else ocean.surfaceSample = null;
       }
 
@@ -229,11 +241,22 @@
         }
       }
 
-      if (!ocean.waterReady) {
+      // Fade in from code rather than CSS, and publish the progress as
+      // ocean.waterMix, so the surface waves (js/main.js) blend their color by
+      // exactly how much of this layer is showing. No jump when it arrives.
+      if (!fadeStart) {
+        fadeStart = now;
         ocean.waterReady = true;
         canvas.classList.add('is-ready');
       }
-      if (!ocean.paused || ocean.pointer.energy > 0 || dirty) frame = requestAnimationFrame(tick);
+      const mix = Math.min(1, (now - fadeStart) / FADE_MS);
+      if (mix !== ocean.waterMix) {
+        ocean.waterMix = mix;
+        canvas.style.opacity = String(mix);
+        // A still scene doesn't animate on its own: nudge the other layers to redraw.
+        if (ocean.paused) for (const fn of ocean.listeners) if (fn !== wake) fn();
+      }
+      if (!ocean.paused || ocean.pointer.energy > 0 || dirty || mix < 1) frame = requestAnimationFrame(tick);
       else { running = false; last = 0; }
     }
 
@@ -253,7 +276,9 @@
       running = false;
       unsubscribe();
       ocean.waterReady = false;
+      ocean.waterMix = 0;
       ocean.surfaceSample = null;
+      canvas.style.opacity = '0';
       canvas.classList.remove('is-ready');
     });
     new ResizeObserver(resize).observe(canvas);
